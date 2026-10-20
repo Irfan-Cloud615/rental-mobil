@@ -7,6 +7,7 @@
 docker-compose.yml
 .env.backup
 .env
+tes.txt
 .phpunit.result.cache
 docker-compose.override.yml
 Homestead.json
