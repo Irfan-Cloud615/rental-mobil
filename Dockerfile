@@ -1,44 +1,43 @@
-FROM php:8.3-apache
+FROM php:8.3-fpm
 
-# 1. Install dependensi sistem, Chromium, dan NodeJS
+# 1. Install dependensi sistem Linux, Chromium, NodeJS 18, dan library pendukung
 RUN apt-get update && apt-get install -y \
-    git curl libpng-dev libonig-dev libxml2-dev zip unzip chromium gnupg libicu-dev libzip-dev \
-    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    chromium \
+    gnupg \
+    libicu-dev \
+    libzip-dev \
+    && curl -sL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 2. FIX MPM: Gunakan cara resmi a2dismod untuk mematikan modul yang bertabrakan
-RUN a2dismod mpm_event mpm_worker || true \
-    && a2enmod mpm_prefork rewrite
-
-# 3. Konfigurasi DocumentRoot Laravel
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-
-# 4. Install Ekstensi PHP
+# 2. Install ekstensi PHP secara efisien (tanpa duplikasi)
 RUN docker-php-ext-configure intl \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl
 
-# 5. Copy Composer
+# 3. Ambil Composer terbaru
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# 6. Set Direktori dan Copy File
-WORKDIR /var/www/html
-COPY . .
+# 4. Set folder kerja di dalam server
+WORKDIR /var/www
 
-# 7. Install Vendor PHP
+# 5. Copy seluruh projek Anda ke server
+COPY . /var/www
+
+# 6. Jalankan instalasi composer untuk produksi
 RUN composer install --no-dev --optimize-autoloader
 
-# 8. Set Hak Akses Folder
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# 7. Atur hak akses folder storage agar bisa menulis PDF dan gambar
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-# 9. Set Default Port (Akan ditimpa oleh Railway saat berjalan)
-ENV PORT=80
+# 8. Expose port 8000 sesuai dengan artisan serve
+EXPOSE 8000
 
-# 10. COMMAND ANTI-GAGAL: Sinkronisasi port Railway, Migrasi DB, lalu Nyalakan Web
-CMD sed -i "s/Listen 80/Listen $PORT/g" /etc/apache2/ports.conf; \
-    sed -i "s/<VirtualHost \*:80>/<VirtualHost \*:$PORT>/g" /etc/apache2/sites-available/000-default.conf; \
-    php artisan migrate --force; \
-    apache2-foreground
+# 9. Eksekusi migrasi database otomatis dilanjutkan dengan menyalakan server
+CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000
