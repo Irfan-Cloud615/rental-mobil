@@ -34,8 +34,6 @@ COPY . .
 
 # Instal dependensi PHP dan Node.js, lalu build aset frontend
 RUN composer install --optimize-autoloader --no-dev
-RUN npm install
-RUN npm run build
 
 # Atur permission untuk folder storage dan bootstrap/cache
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
