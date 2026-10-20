@@ -1,0 +1,22 @@
+{
+  "menu": [
+    {
+      "url": "/home",
+      "name": "Home",
+      "icon": "menu-icon tf-icons ti ti-smart-home",
+      "slug": "home"
+    },
+    {
+      "url": "/pesanan-saya",
+      "name": "Pesanan Saya",
+      "icon": "menu-icon tf-icons ti ti-shopping-cart",
+      "slug": "pesanan-saya.index"
+    },
+    {
+      "url": "/riwayat",
+      "name": "Riwayat",
+      "icon": "menu-icon tf-icons ti ti-history",
+      "slug": "riwayat.index"
+    }
+  ]
+}

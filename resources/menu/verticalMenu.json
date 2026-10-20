@@ -1,0 +1,61 @@
+{
+  "menu": [
+    {
+      "url": "/admin",
+      "name": "Dashboard",
+      "icon": "menu-icon tf-icons ti ti-layout-dashboard",
+      "slug": "admin.home",
+      "roles": [
+        "admin"
+      ]
+    },
+    {
+      "menuHeader": "Manuale"
+    },
+    {
+      "url": "/admin/cars",
+      "name": "Data Mobil",
+      "icon": "menu-icon tf-icons ti ti-car",
+      "slug": "admin.cars.index",
+      "roles": [
+        "admin"
+      ]
+    },
+    {
+      "url": "/admin/bookings",
+      "name": "Data Pemesanan",
+      "icon": "menu-icon tf-icons ti ti-list-check",
+      "slug": "admin.bookings.index",
+      "roles": [
+        "admin"
+      ]
+    },
+    {
+      "url": "/admin/payments",
+      "name": "Verifikasi Pembayaran",
+      "icon": "menu-icon tf-icons ti ti-receipt",
+      "slug": "admin.payments.index",
+      "roles": [
+        "admin"
+      ]
+    },
+    {
+      "url": "/admin/bank-accounts",
+      "name": "Rekening Bank",
+      "icon": "menu-icon tf-icons ti ti-building-bank",
+      "slug": "admin.bank-accounts.index",
+      "roles": [
+        "admin"
+      ]
+    },
+    {
+      "url": "/admin/customers",
+      "name": "Data Pelanggan",
+      "icon": "menu-icon tf-icons ti ti-users",
+      "slug": "admin.customers.index",
+      "roles": [
+        "admin"
+      ]
+    }
+  ]
+}
