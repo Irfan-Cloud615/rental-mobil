@@ -1,5 +1,4 @@
 <!-- BEGIN: Vendor JS-->
- <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 <script src="{{ asset(mix('assets/vendor/libs/jquery/jquery.js')) }}"></script>
 <script src="{{ asset(mix('assets/vendor/libs/popper/popper.js')) }}"></script>
 <script src="{{ asset(mix('assets/vendor/js/bootstrap.js')) }}"></script>
