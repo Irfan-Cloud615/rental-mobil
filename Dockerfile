@@ -1,6 +1,6 @@
-FROM php:8.3-fpm
+FROM php:8.3-apache
 
-# Install dependensi sistem Linux, Chromium, dan libzip-dev
+# 1. Install dependensi sistem Linux, Chromium, Node.js, dan library pendukung
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -12,33 +12,41 @@ RUN apt-get update && apt-get install -y \
     chromium \
     gnupg \
     libicu-dev \
-    libzip-dev
+    libzip-dev \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# 2. Fix MPM Apache (mencegah crash "More than one MPM loaded") & aktifkan mod_rewrite
+RUN rm -f /etc/apache2/mods-enabled/mpm_*.conf \
+    && rm -f /etc/apache2/mods-enabled/mpm_*.load \
+    && a2enmod mpm_prefork \
+    && a2enmod rewrite
 
+# 3. Ubah DocumentRoot Apache langsung ke folder public Laravel
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
+# 4. Install semua ekstensi PHP yang dibutuhkan Laravel sekaligus
 RUN docker-php-ext-configure intl \
-    && docker-php-ext-install pdo_mysql gd zip intl
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl
 
-# Install NodeJS dan NPM secara global di server
-RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs
-
-# Install ekstensi PHP (Sekarang ditambah 'zip' di bagian akhir)
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
-
-# Ambil Composer terbaru
+# 5. Copy Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set folder kerja di dalam server
-WORKDIR /var/www
+# 6. Set direktori kerja
+WORKDIR /var/www/html
 
-# Copy seluruh projek Anda ke server
-COPY . /var/www
+# 7. Copy seluruh source code projek
+COPY . .
 
-# Jalankan instalasi composer untuk produksi
+# 8. Jalankan instalasi composer produksi
 RUN composer install --no-dev --optimize-autoloader
 
-# Atur hak akses folder storage agar bisa menulis PDF dan gambar produk
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+# 9. Atur hak akses folder storage & bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-EXPOSE 8000
-CMD php artisan serve --host=0.0.0.0 --port=8000
+# 10. Expose port 80 untuk Railway
+EXPOSE 80
